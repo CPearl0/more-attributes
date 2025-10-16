@@ -48,14 +48,16 @@ public class SelectClassScreen extends Screen {
 
     public SelectClassScreen() {
         super(Component.empty());
+
         super.minecraft = Minecraft.getInstance();
+
         page = 0;
     }
 
     @Override
     public void init()
     {
-        if(minecraft != null)
+        if (minecraft != null)
         {
             posX = (super.width - backgroundWidth) / 2;
 
@@ -212,7 +214,7 @@ public class SelectClassScreen extends Screen {
 
     public void updateClass()
     {
-        classData = ClassLoader.Classes.get(page);
+        classData = ClassLoader.Classes.size() > page ? ClassLoader.Classes.get(page) : new ClassData();
 
         className = Component.translatable(LangUtils.getClassNameKey(classData.name)).withStyle(sung);
 

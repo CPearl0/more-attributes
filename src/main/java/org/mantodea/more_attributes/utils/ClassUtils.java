@@ -7,8 +7,11 @@ import net.minecraft.network.chat.MutableComponent;
 import net.minecraft.network.chat.Style;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Player;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
 import org.mantodea.more_attributes.MoreAttributes;
 import org.mantodea.more_attributes.datas.ClassData;
+import org.mantodea.more_attributes.datas.ClassLoader;
 import org.mantodea.more_attributes.ui.SelectClassScreen;
 
 import java.util.List;
@@ -52,11 +55,15 @@ public class ClassUtils {
         player.getCapability(MoreAttributes.PLAYER_CLASS).resolve().ifPresent(cap -> {
             cap.setClass(classData);
 
-            if (!ClassUtils.hasSelectClass(player) && !player.isDeadOrDying()) {
-                Minecraft.getInstance().setScreen(new SelectClassScreen());
-            }
+            TryOpenSelectScreen(player);
         });
+    }
 
-
+    @OnlyIn(Dist.CLIENT)
+    public static void TryOpenSelectScreen(Player player)
+    {
+        if (!ClassUtils.hasSelectClass(player) && !player.isDeadOrDying() && !ClassLoader.Classes.isEmpty()) {
+            Minecraft.getInstance().setScreen(new SelectClassScreen());
+        }
     }
 }

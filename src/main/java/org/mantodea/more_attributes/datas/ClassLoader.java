@@ -26,6 +26,7 @@ public class ClassLoader extends SimpleJsonResourceReloadListener {
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> map, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
         Classes.clear();
+        
         for(JsonElement jsonElement : map.values()) {
             ClassData data = GSON.fromJson(jsonElement, ClassData.class);
 

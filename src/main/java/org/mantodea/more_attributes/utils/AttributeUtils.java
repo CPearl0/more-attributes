@@ -6,7 +6,9 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.ai.attributes.Attribute;
 import net.minecraft.world.entity.ai.attributes.RangedAttribute;
+import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.EntityAttributeModificationEvent;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.mantodea.more_attributes.MoreAttributes;
 import org.mantodea.more_attributes.datas.AttributeData;
@@ -16,28 +18,27 @@ import org.mantodea.more_attributes.datas.DetailLoader;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class AttributeUtils {
 
     public static Attribute rangedDetail(String name, double defaultVal, double min, double max) {
         Attribute attr = new RangedAttribute(name, defaultVal, min, max);
 
-        MyDetailAttributes.put(name, attr);
-
         MyModAttributes.put(name, attr);
 
         return attr;
     }
 
-    public static HashMap<String, Attribute> MyDetailAttributes = new HashMap<>();
-
     public static HashMap<String, Attribute> MyModAttributes = new HashMap<>();
 
-    public static HashMap<String, Attribute> CustomDetailAttributes = new HashMap<>();
+    public static HashMap<String, Attribute> OtherModDetailAttributes = new HashMap<>();
 
-    public static HashMap<String, Attribute> AllDetailAttributes = new HashMap<>();
-
-    public static HashMap<String, Attribute> AllAttributes = new HashMap<>();
+    public static Map<String, Attribute> getAllDetailAttributes() {
+        return Stream.concat(MyModAttributes.entrySet().stream(),  OtherModDetailAttributes.entrySet().stream()).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+    }
 
     public static ResourceLocation resourceLocationBuilder(String name)
     {
@@ -46,7 +47,7 @@ public class AttributeUtils {
 
     public static void register()
     {
-        for (var pair : MyDetailAttributes.entrySet())
+        for (var pair : MyModAttributes.entrySet())
         {
             ForgeRegistries.ATTRIBUTES.register(resourceLocationBuilder(pair.getKey()), pair.getValue());
         }
@@ -54,7 +55,7 @@ public class AttributeUtils {
 
     public static void registerPlayerAttribute(EntityAttributeModificationEvent event)
     {
-        for (var attr : MyDetailAttributes.values())
+        for (var attr : MyModAttributes.values())
         {
             event.add(EntityType.PLAYER, attr);
         }

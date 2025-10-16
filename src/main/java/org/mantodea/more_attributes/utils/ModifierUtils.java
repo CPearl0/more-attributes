@@ -9,6 +9,7 @@ import net.minecraft.world.entity.ai.attributes.AttributeModifier;
 import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.mantodea.more_attributes.MoreAttributes;
 import org.mantodea.more_attributes.attributes.DetailAttributes;
@@ -38,7 +39,7 @@ public class ModifierUtils {
             private static boolean modifierAdded = false;
 
             public static void initialize() {
-                for (var attr : AttributeUtils.AllAttributes.keySet()) {
+                for (var attr : AttributeUtils.getAllDetailAttributes().keySet()) {
                     AdditionModifiers.put(attr, UUID.randomUUID());
 
                     BaseMultiplyModifiers.put(attr, UUID.randomUUID());
@@ -54,6 +55,9 @@ public class ModifierUtils {
             }
 
             public static void rebuildModifiers(Player player) {
+                if (FMLEnvironment.dist.isClient())
+                    return;
+
                 if(modifierAdded)
                     removeModifiers(player);
 
@@ -124,24 +128,31 @@ public class ModifierUtils {
             }
 
             private static void addToValue(String attributeName, AttributeModifier.Operation operation, float value) {
-                switch (operation) {
-                    case ADDITION:
-                        AdditionValues.compute(attributeName, (k, val) -> val + value);
-                        break;
-                    case MULTIPLY_BASE:
-                        BaseMultiplyValues.compute(attributeName, (k, val) -> val + value);
-                        break;
-                    case MULTIPLY_TOTAL:
-                        TotalMultiplyValues.compute(attributeName, (k, val) -> val + value);
-                        break;
+                try
+                {
+                    switch (operation) {
+                        case ADDITION:
+                            AdditionValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                        case MULTIPLY_BASE:
+                            BaseMultiplyValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                        case MULTIPLY_TOTAL:
+                            TotalMultiplyValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                    }
+                }
+                catch (NullPointerException e)
+                {
+                    MoreAttributes.LOGGER.warn("Equip Null pointer: {}, type: {}, value: {}", attributeName, operation, value);
                 }
             }
 
             private static float getValue(String attributeName, AttributeModifier.Operation operation) {
                 return switch (operation) {
-                    case ADDITION -> AdditionValues.get(attributeName);
-                    case MULTIPLY_BASE -> BaseMultiplyValues.get(attributeName);
-                    case MULTIPLY_TOTAL -> TotalMultiplyValues.get(attributeName);
+                    case ADDITION -> AdditionValues.getOrDefault(attributeName, 0f);
+                    case MULTIPLY_BASE -> BaseMultiplyValues.getOrDefault(attributeName, 1f);
+                    case MULTIPLY_TOTAL -> TotalMultiplyValues.getOrDefault(attributeName, 1f);
                 };
             }
 
@@ -160,7 +171,7 @@ public class ModifierUtils {
                     removeModifier(player, attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL);
                 }
 
-                for (var attr : AttributeUtils.CustomDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.OtherModDetailAttributes.entrySet()) {
                     String[] attributeData = attr.getKey().split(":");
 
                     String attributeName = attributeData[1];
@@ -188,7 +199,7 @@ public class ModifierUtils {
             private static void removeCustomModifier(Player player, String attribute, AttributeModifier.Operation operation) {
                 UUID uuid = getUUID(attribute, operation);
 
-                Objects.requireNonNull(player.getAttribute(AttributeUtils.CustomDetailAttributes.get(attribute))).removeModifier(uuid);
+                Objects.requireNonNull(player.getAttribute(AttributeUtils.OtherModDetailAttributes.get(attribute))).removeModifier(uuid);
             }
 
             private static void addModifiers(Player player) {
@@ -209,7 +220,7 @@ public class ModifierUtils {
                     addModifier(player, attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL, getValue(attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL));
                 }
 
-                for (var attr : AttributeUtils.CustomDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.OtherModDetailAttributes.entrySet()) {
                     String[] attributeData = attr.getKey().split(":");
 
                     String attributeName = attributeData[1];
@@ -237,7 +248,7 @@ public class ModifierUtils {
             private static void addCustomModifier(Player player, String attribute, AttributeModifier.Operation operation, float val) {
                 AttributeModifier modifier = createModifier(attribute, operation, val);
 
-                Objects.requireNonNull(player.getAttribute(AttributeUtils.CustomDetailAttributes.get(attribute))).addTransientModifier(modifier);
+                Objects.requireNonNull(player.getAttribute(AttributeUtils.OtherModDetailAttributes.get(attribute))).addTransientModifier(modifier);
             }
 
             private static AttributeModifier createModifier(String attribute, AttributeModifier.Operation operation, float val) {
@@ -255,7 +266,7 @@ public class ModifierUtils {
             }
 
             private static void resetValues() {
-                for (var attr : AttributeUtils.AllAttributes.keySet()) {
+                for (var attr : AttributeUtils.getAllDetailAttributes().keySet()) {
                     AdditionValues.put(attr, 0f);
 
                     BaseMultiplyValues.put(attr, 0f);
@@ -282,7 +293,7 @@ public class ModifierUtils {
 
             public static void initialize() {
 
-                for (var attr : AttributeUtils.AllDetailAttributes.keySet()) {
+                for (var attr : AttributeUtils.getAllDetailAttributes().keySet()) {
 
                     AdditionModifiers.put(attr, UUID.randomUUID());
 
@@ -299,6 +310,9 @@ public class ModifierUtils {
             }
 
             public static void rebuildModifiers(Player player) {
+                if (FMLEnvironment.dist.isClient())
+                    return;
+
                 if(modifierAdded)
                     removeModifiers(player);
 
@@ -350,29 +364,36 @@ public class ModifierUtils {
             }
 
             private static void addToValue(String attributeName, AttributeModifier.Operation operation, float value) {
-                switch (operation) {
-                    case ADDITION:
-                        AdditionValues.compute(attributeName, (k, val) -> val + value);
-                        break;
-                    case MULTIPLY_BASE:
-                        BaseMultiplyValues.compute(attributeName, (k, val) -> val + value);
-                        break;
-                    case MULTIPLY_TOTAL:
-                        TotalMultiplyValues.compute(attributeName, (k, val) -> val + value);
-                        break;
+                try
+                {
+                    switch (operation) {
+                        case ADDITION:
+                            AdditionValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                        case MULTIPLY_BASE:
+                            BaseMultiplyValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                        case MULTIPLY_TOTAL:
+                            TotalMultiplyValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                    }
+                }
+                catch (NullPointerException e)
+                {
+                    MoreAttributes.LOGGER.warn("Level Null pointer: {}, type: {}, value: {}", attributeName, operation, value);
                 }
             }
 
             private static float getValue(String attributeName, AttributeModifier.Operation operation) {
                 return switch (operation) {
-                    case ADDITION -> AdditionValues.get(attributeName);
-                    case MULTIPLY_BASE -> BaseMultiplyValues.get(attributeName);
-                    case MULTIPLY_TOTAL -> TotalMultiplyValues.get(attributeName);
+                    case ADDITION -> AdditionValues.getOrDefault(attributeName, 0f);
+                    case MULTIPLY_BASE -> BaseMultiplyValues.getOrDefault(attributeName, 1f);
+                    case MULTIPLY_TOTAL -> TotalMultiplyValues.getOrDefault(attributeName, 1f);
                 };
             }
 
             private static void removeModifiers(Player player) {
-                for (var attr : AttributeUtils.MyDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.MyModAttributes.entrySet()) {
                     String attributeName = attr.getKey();
 
                     DetailData data = AttributeUtils.getDetailData("more_attributes", attributeName);
@@ -386,7 +407,7 @@ public class ModifierUtils {
                     removeModifier(player, attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL);
                 }
 
-                for (var attr : AttributeUtils.CustomDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.OtherModDetailAttributes.entrySet()) {
                     String[] attributeData = attr.getKey().split(":");
 
                     String attributeName = attributeData[1];
@@ -414,14 +435,14 @@ public class ModifierUtils {
             private static void removeCustomModifier(Player player, String attribute, AttributeModifier.Operation operation) {
                 UUID uuid = getUUID(attribute, operation);
 
-                Objects.requireNonNull(player.getAttribute(AttributeUtils.CustomDetailAttributes.get(attribute))).removeModifier(uuid);
+                Objects.requireNonNull(player.getAttribute(AttributeUtils.OtherModDetailAttributes.get(attribute))).removeModifier(uuid);
             }
 
             private static void addModifiers(Player player) {
 
                 modifierAdded = true;
 
-                for (var attr : AttributeUtils.MyDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.MyModAttributes.entrySet()) {
                     String attributeName = attr.getKey();
 
                     DetailData data = AttributeUtils.getDetailData("more_attributes", attributeName);
@@ -435,7 +456,7 @@ public class ModifierUtils {
                     addModifier(player, attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL, getValue(attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL));
                 }
 
-                for (var attr : AttributeUtils.CustomDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.OtherModDetailAttributes.entrySet()) {
                     String[] attributeData = attr.getKey().split(":");
 
                     String attributeName = attributeData[1];
@@ -463,7 +484,7 @@ public class ModifierUtils {
             private static void addCustomModifier(Player player, String attribute, AttributeModifier.Operation operation, float val) {
                 AttributeModifier modifier = createModifier(attribute, operation, val);
 
-                Objects.requireNonNull(player.getAttribute(AttributeUtils.CustomDetailAttributes.get(attribute))).addTransientModifier(modifier);
+                Objects.requireNonNull(player.getAttribute(AttributeUtils.OtherModDetailAttributes.get(attribute))).addTransientModifier(modifier);
             }
 
             private static AttributeModifier createModifier(String attribute, AttributeModifier.Operation operation, float val) {
@@ -481,7 +502,7 @@ public class ModifierUtils {
             }
 
             private static void resetValues() {
-                for (var attr : AttributeUtils.AllDetailAttributes.keySet()) {
+                for (var attr : AttributeUtils.getAllDetailAttributes().keySet()) {
                     AdditionValues.put(attr, 0f);
 
                     BaseMultiplyValues.put(attr, 0f);
@@ -507,7 +528,7 @@ public class ModifierUtils {
             private static boolean modifierAdded = false;
 
             public static void initialize() {
-                for (var attr : AttributeUtils.AllAttributes.keySet()) {
+                for (var attr : AttributeUtils.getAllDetailAttributes().keySet()) {
 
                     AdditionModifiers.put(attr, UUID.randomUUID());
 
@@ -524,6 +545,9 @@ public class ModifierUtils {
             }
 
             public static void rebuildModifiers(Player player) {
+                if (FMLEnvironment.dist.isClient())
+                    return;
+
                 if(modifierAdded)
                     removeModifiers(player);
 
@@ -541,29 +565,36 @@ public class ModifierUtils {
             }
 
             private static void addToValue(String attributeName, AttributeModifier.Operation operation, float value) {
-                switch (operation) {
-                    case ADDITION:
-                        AdditionValues.compute(attributeName, (k, val) -> val + value);
-                        break;
-                    case MULTIPLY_BASE:
-                        BaseMultiplyValues.compute(attributeName, (k, val) -> val + value);
-                        break;
-                    case MULTIPLY_TOTAL:
-                        TotalMultiplyValues.compute(attributeName, (k, val) -> val + value);
-                        break;
+                try
+                {
+                    switch (operation) {
+                        case ADDITION:
+                            AdditionValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                        case MULTIPLY_BASE:
+                            BaseMultiplyValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                        case MULTIPLY_TOTAL:
+                            TotalMultiplyValues.compute(attributeName, (k, val) -> val + value);
+                            break;
+                    }
+                }
+                catch (NullPointerException e)
+                {
+                    MoreAttributes.LOGGER.warn("Hands Null pointer: {}, type: {}, value: {}", attributeName, operation, value);
                 }
             }
 
             private static float getValue(String attributeName, AttributeModifier.Operation operation) {
                 return switch (operation) {
-                    case ADDITION -> AdditionValues.get(attributeName);
-                    case MULTIPLY_BASE -> BaseMultiplyValues.get(attributeName);
-                    case MULTIPLY_TOTAL -> TotalMultiplyValues.get(attributeName);
+                    case ADDITION -> AdditionValues.getOrDefault(attributeName, 0f);
+                    case MULTIPLY_BASE -> BaseMultiplyValues.getOrDefault(attributeName, 1f);
+                    case MULTIPLY_TOTAL -> TotalMultiplyValues.getOrDefault(attributeName, 1f);
                 };
             }
 
             private static void removeModifiers(Player player) {
-                for (var attr : AttributeUtils.MyDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.MyModAttributes.entrySet()) {
                     String attributeName = attr.getKey();
 
                     DetailData data = AttributeUtils.getDetailData("more_attributes", attributeName);
@@ -577,7 +608,7 @@ public class ModifierUtils {
                     removeModifier(player, attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL);
                 }
 
-                for (var attr : AttributeUtils.CustomDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.OtherModDetailAttributes.entrySet()) {
                     String[] attributeData = attr.getKey().split(":");
 
                     String attributeName = attributeData[1];
@@ -605,14 +636,14 @@ public class ModifierUtils {
             private static void removeCustomModifier(Player player, String attribute, AttributeModifier.Operation operation) {
                 UUID uuid = getUUID(attribute, operation);
 
-                Objects.requireNonNull(player.getAttribute(AttributeUtils.CustomDetailAttributes.get(attribute))).removeModifier(uuid);
+                Objects.requireNonNull(player.getAttribute(AttributeUtils.OtherModDetailAttributes.get(attribute))).removeModifier(uuid);
             }
 
             private static void addModifiers(Player player) {
 
                 modifierAdded = true;
 
-                for (var attr : AttributeUtils.MyDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.MyModAttributes.entrySet()) {
                     String attributeName = attr.getKey();
 
                     DetailData data = AttributeUtils.getDetailData("more_attributes", attributeName);
@@ -626,7 +657,7 @@ public class ModifierUtils {
                     addModifier(player, attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL, getValue(attributeName, AttributeModifier.Operation.MULTIPLY_TOTAL));
                 }
 
-                for (var attr : AttributeUtils.CustomDetailAttributes.entrySet()) {
+                for (var attr : AttributeUtils.OtherModDetailAttributes.entrySet()) {
                     String[] attributeData = attr.getKey().split(":");
 
                     String attributeName = attributeData[1];
@@ -654,7 +685,7 @@ public class ModifierUtils {
             private static void addCustomModifier(Player player, String attribute, AttributeModifier.Operation operation, float val) {
                 AttributeModifier modifier = createModifier(attribute, operation, val);
 
-                Objects.requireNonNull(player.getAttribute(AttributeUtils.CustomDetailAttributes.get(attribute))).addTransientModifier(modifier);
+                Objects.requireNonNull(player.getAttribute(AttributeUtils.OtherModDetailAttributes.get(attribute))).addTransientModifier(modifier);
             }
 
             private static AttributeModifier createModifier(String attribute, AttributeModifier.Operation operation, float val) {
@@ -672,7 +703,7 @@ public class ModifierUtils {
             }
 
             private static void resetValues() {
-                for (var attr : AttributeUtils.AllAttributes.keySet()) {
+                for (var attr : AttributeUtils.getAllDetailAttributes().keySet()) {
                     AdditionValues.put(attr, 0f);
 
                     BaseMultiplyValues.put(attr, 0f);
@@ -733,6 +764,9 @@ public class ModifierUtils {
             }
 
             public static void rebuildModifier(Player player) {
+
+                if (FMLEnvironment.dist.isClient())
+                    return;
 
                 AttributeInstance speed = player.getAttribute(Attributes.MOVEMENT_SPEED);
 
@@ -821,6 +855,7 @@ public class ModifierUtils {
         }
 
         public static void initialize() {
+
             Equip.initialize();
 
             Level.initialize();
@@ -852,7 +887,7 @@ public class ModifierUtils {
 
             String name = modifier.attribute;
 
-            ConditionalContent data = AttributeUtils.AllDetailAttributes.containsKey(name) ?
+            ConditionalContent data = AttributeUtils.getAllDetailAttributes().containsKey(name) ?
                 AttributeUtils.getDetailData(modifier.mod, name) :
                 AttributeUtils.getAttributeData(name);
 

@@ -26,8 +26,6 @@ public class ResetClassCommand {
 
                         AttributesChannel.sendToClient(new SyncClassToClientMessage(new ClassData()), player);
 
-                        ModifierUtils.DetailModifiers.Level.rebuildModifiers(player);
-
                         return 0;
                     })
                 )

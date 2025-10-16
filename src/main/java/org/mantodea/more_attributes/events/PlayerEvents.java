@@ -6,19 +6,24 @@ import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.event.AttachCapabilitiesEvent;
 import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingEquipmentChangeEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import org.mantodea.more_attributes.MoreAttributes;
 import org.mantodea.more_attributes.capability.PlayerClassCapabilityProvider;
 import org.mantodea.more_attributes.messages.AttributesChannel;
 import org.mantodea.more_attributes.messages.SyncClassToClientMessage;
+import org.mantodea.more_attributes.messages.SyncDataToClientMessage;
+import org.mantodea.more_attributes.utils.AttributeUtils;
 import org.mantodea.more_attributes.utils.ModifierUtils;
 import top.theillusivec4.curios.api.event.CurioChangeEvent;
 
 @Mod.EventBusSubscriber(modid = MoreAttributes.MODID, bus = Mod.EventBusSubscriber.Bus.FORGE)
 public class PlayerEvents {
+
     @SubscribeEvent
     public static void onEquipChange(LivingEquipmentChangeEvent event) {
         if (event.getEntity() instanceof Player player) {
@@ -35,6 +40,9 @@ public class PlayerEvents {
 
     @SubscribeEvent
     public static void tick(TickEvent.PlayerTickEvent event) {
+        if (!SyncDataToClientMessage.hasSync)
+            return;
+
         if (event.phase == TickEvent.Phase.END) {
             Player player = event.player;
 

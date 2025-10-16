@@ -71,7 +71,5 @@ public record SyncClassToClientMessage(ClassData data) {
         if (player == null || data == null) return;
 
         ClassUtils.setPlayerClass(player, data);
-
-        ModifierUtils.DetailModifiers.Level.rebuildModifiers(player);
     }
 }

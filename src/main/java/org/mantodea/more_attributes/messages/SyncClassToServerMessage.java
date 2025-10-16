@@ -77,8 +77,6 @@ public record SyncClassToServerMessage(ClassData data) {
 
             ClassUtils.setPlayerClass(player, data);
 
-            ModifierUtils.DetailModifiers.Level.rebuildModifiers(player);
-
             for (var entry : data.startItems.entrySet()) {
                 var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(entry.getKey()));
 

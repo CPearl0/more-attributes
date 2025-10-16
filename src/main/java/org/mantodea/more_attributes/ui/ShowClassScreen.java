@@ -51,7 +51,7 @@ public class ShowClassScreen extends Screen {
 
         page = 0;
 
-        pageMax = AttributeUtils.AllDetailAttributes.size() / attrPerPage + 2;
+        pageMax = AttributeUtils.getAllDetailAttributes().size() / attrPerPage + 2;
     }
 
     @Override
@@ -183,7 +183,7 @@ public class ShowClassScreen extends Screen {
 
         int index = attrPerPage * (page - 1);
 
-        var entrySet = AttributeUtils.AllDetailAttributes.entrySet().stream().toList();
+        var entrySet = AttributeUtils.getAllDetailAttributes().entrySet().stream().toList();
 
         int attributePosX = coordinates.startAttributesPosX;
 

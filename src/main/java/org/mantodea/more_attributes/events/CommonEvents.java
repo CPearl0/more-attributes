@@ -15,6 +15,7 @@ import org.mantodea.more_attributes.datas.*;
 import org.mantodea.more_attributes.datas.ClassLoader;
 import org.mantodea.more_attributes.messages.AttributesChannel;
 import org.mantodea.more_attributes.messages.SyncDataToClientMessage;
+import org.mantodea.more_attributes.utils.AttributeUtils;
 import org.mantodea.more_attributes.utils.ModifierUtils;
 
 import java.util.Objects;
@@ -23,8 +24,6 @@ import java.util.Objects;
 public class CommonEvents {
     @SubscribeEvent
     public static void onPlayerLogin(PlayerEvent.PlayerLoggedInEvent event) {
-
-        ModifierUtils.DetailModifiers.initialize();
 
         Player player = event.getEntity();
 

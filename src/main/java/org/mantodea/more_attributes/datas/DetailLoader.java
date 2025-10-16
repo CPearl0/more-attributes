@@ -7,10 +7,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.packs.resources.ResourceManager;
 import net.minecraft.server.packs.resources.SimpleJsonResourceReloadListener;
 import net.minecraft.util.profiling.ProfilerFiller;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.fml.loading.FMLEnvironment;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.mantodea.more_attributes.MoreAttributes;
 import org.mantodea.more_attributes.utils.AttributeUtils;
 import org.mantodea.more_attributes.utils.ModUtils;
+import org.mantodea.more_attributes.utils.ModifierUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,6 +31,7 @@ public class DetailLoader extends SimpleJsonResourceReloadListener {
     @Override
     protected void apply(Map<ResourceLocation, JsonElement> map, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
         Details.clear();
+
         for (JsonElement jsonElement : map.values()) {
             DetailData data = GSON.fromJson(jsonElement, DetailData.class);
 
@@ -46,7 +50,7 @@ public class DetailLoader extends SimpleJsonResourceReloadListener {
                 if (attribute == null)
                     continue;
 
-                AttributeUtils.CustomDetailAttributes.put(data.mod + ":" + data.name, attribute.getValue());
+                AttributeUtils.OtherModDetailAttributes.put(data.mod + ":" + data.name, attribute.getValue());
             }
             else if (!ForgeRegistries.ATTRIBUTES.containsKey(ResourceLocation.fromNamespaceAndPath(data.mod, data.name)))
             {
@@ -55,16 +59,9 @@ public class DetailLoader extends SimpleJsonResourceReloadListener {
             }
 
             Details.add(data);
+
+            if (!FMLEnvironment.dist.isClient())
+                ModifierUtils.DetailModifiers.initialize();
         }
-
-        AttributeUtils.AllDetailAttributes.clear();
-
-        AttributeUtils.AllDetailAttributes.putAll(AttributeUtils.MyDetailAttributes);
-
-        AttributeUtils.AllDetailAttributes.putAll(AttributeUtils.CustomDetailAttributes);
-
-        AttributeUtils.AllAttributes.clear();
-
-        AttributeUtils.AllAttributes.putAll(AttributeUtils.AllDetailAttributes);
     }
 }
