@@ -103,8 +103,6 @@
   "more_attributes.detail.parcool.max_stamina.addition": "基础最大体力值 %s",
   "more_attributes.detail.parcool.max_stamina.display": "最大体力值 %s",
 
-  "more_attributes.class.test": "测试",
-
   "more_attributes.slot.vanilla.mainhand": "在主手栏位时 :",
   "more_attributes.slot.vanilla.offhand": "在副手栏位时 :",
   "more_attributes.slot.vanilla.feet": "在靴子栏位时 :",
@@ -121,5 +119,26 @@
   "more_attributes.slot.curios.bracelet": "在手镯饰品槽时 :",
   "more_attributes.slot.curios.necklace": "在项链饰品槽时 :",
   "more_attributes.slot.curios.body": "在胸饰饰品槽时 :",
-  "more_attributes.slot.curios.curio": "在饰品饰品槽时 :"
+  "more_attributes.slot.curios.curio": "在饰品饰品槽时 :",
+
+  "more_attributes.class.aborigines_explorers": "探险家",
+  "more_attributes.class.description.aborigines_explorers": "极度喜欢探险, 有机会获得更多的资源",
+  "more_attributes.class.aborigines_hunters": "猎人",
+  "more_attributes.class.description.aborigines_hunters": "狩猎时会获得额外的产出",
+  "more_attributes.class.aborigines_primitive_people": "原始人",
+  "more_attributes.class.description.aborigines_primitive_people": "啥也不会但是体格强壮！",
+  "more_attributes.class.aborigines_shepherds": "牧羊人",
+  "more_attributes.class.description.aborigines_shepherds": "养殖时可增加繁育速度及产出",
+  "more_attributes.class.crash_landed_refugees_crew_members": "船员",
+  "more_attributes.class.description.crash_landed_refugees_crew_members": "擅长航海！开船速度超快！",
+  "more_attributes.class.crash_landed_refugees_merchants": "商人",
+  "more_attributes.class.description.crash_landed_refugees_merchants": "跟村民交易时可获得额外减免",
+  "more_attributes.class.crash_landed_refugees_prisoners": "囚徒",
+  "more_attributes.class.description.crash_landed_refugees_prisoners": "耐力超强！",
+  "more_attributes.class.crash_landed_refugees_researchers": "科研人员",
+  "more_attributes.class.description.crash_landed_refugees_researchers": "智慧极高, 法术超强！",
+  "more_attributes.class.prison_wang": "牢王",
+  "more_attributes.class.description.prison_wang": "牢王,饿的时候增加的耐性更多1",
+  "more_attributes.class.worthless_people": "无用之人",
+  "more_attributes.class.description.worthless_people": "什么都不会, 但可以快速获得经验"
 }

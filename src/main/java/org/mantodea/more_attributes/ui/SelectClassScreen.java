@@ -293,4 +293,11 @@ public class SelectClassScreen extends Screen {
             updateButtons();
         }
     }
+
+    @Override
+    public boolean shouldCloseOnEsc()
+    {
+//        return getMinecraft().player == null || ClassUtils.hasSelectClass(getMinecraft().player);
+        return false;
+    }
 }
