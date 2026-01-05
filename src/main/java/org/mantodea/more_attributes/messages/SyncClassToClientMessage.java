@@ -2,18 +2,19 @@ package org.mantodea.more_attributes.messages;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.util.GsonHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.network.NetworkEvent;
 import org.mantodea.more_attributes.datas.ClassData;
+import org.mantodea.more_attributes.datas.ClassLoader;
 import org.mantodea.more_attributes.utils.ClassUtils;
 import org.mantodea.more_attributes.utils.ModifierUtils;
 
 import java.util.function.Supplier;
 
 public record SyncClassToClientMessage(ClassData data) {
-
     public SyncClassToClientMessage(FriendlyByteBuf buf) {
         this(getData(buf));
     }
@@ -33,6 +34,12 @@ public record SyncClassToClientMessage(ClassData data) {
             classData.attributes.put(attr, level);
         }
 
+        var startItemSize = buf.readInt();
+        for (int i = 0; i < startItemSize; i++) {
+            var item = buf.readItem();
+            classData.startItems.add(item);
+        }
+
         return classData;
     }
 
@@ -49,10 +56,8 @@ public record SyncClassToClientMessage(ClassData data) {
 
         buf.writeInt(data.startItems.size());
 
-        for (var entry : data.startItems.entrySet()) {
-            buf.writeUtf(entry.getKey());
-
-            buf.writeInt(entry.getValue());
+        for (var item : data.startItems) {
+            buf.writeItem(item);
         }
     }
 
@@ -66,10 +71,9 @@ public record SyncClassToClientMessage(ClassData data) {
 
     @OnlyIn(Dist.CLIENT)
     private void handle() {
-        Player player = (Player) Minecraft.getInstance().player;
+        Player player = Minecraft.getInstance().player;
 
         if (player == null || data == null) return;
-
         ClassUtils.setPlayerClass(player, data);
     }
 }

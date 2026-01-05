@@ -1,15 +1,11 @@
 package org.mantodea.more_attributes.messages;
 
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.mantodea.more_attributes.datas.ClassData;
 import org.mantodea.more_attributes.utils.ClassUtils;
-import org.mantodea.more_attributes.utils.ModifierUtils;
 
 import java.util.function.Supplier;
 
@@ -35,13 +31,9 @@ public record SyncClassToServerMessage(ClassData data) {
         }
 
         var startItemSize = buf.readInt();
-
         for (int i = 0; i < startItemSize; i++) {
-            var item = buf.readUtf();
-
-            var stack = buf.readInt();
-
-            classData.startItems.put(item, stack);
+            var item = buf.readItem();
+            classData.startItems.add(item);
         }
 
         return classData;
@@ -60,10 +52,8 @@ public record SyncClassToServerMessage(ClassData data) {
 
         buf.writeInt(data.startItems.size());
 
-        for (var entry : data.startItems.entrySet()) {
-            buf.writeUtf(entry.getKey());
-
-            buf.writeInt(entry.getValue());
+        for (var item : data.startItems) {
+            buf.writeItem(item);
         }
     }
 
@@ -74,16 +64,11 @@ public record SyncClassToServerMessage(ClassData data) {
             ServerPlayer player = ctx.getSender();
 
             if (player == null || data == null) return;
-
             ClassUtils.setPlayerClass(player, data);
 
-            for (var entry : data.startItems.entrySet()) {
-                var item = ForgeRegistries.ITEMS.getValue(ResourceLocation.parse(entry.getKey()));
-
-                if (item != null) {
-                    var itemStack = new ItemStack(item, entry.getValue());
-
-                    ItemHandlerHelper.giveItemToPlayer(player, itemStack);
+            for (var entry : data.startItems) {
+                if (entry != null) {
+                    ItemHandlerHelper.giveItemToPlayer(player, entry);
                 }
             }
         });

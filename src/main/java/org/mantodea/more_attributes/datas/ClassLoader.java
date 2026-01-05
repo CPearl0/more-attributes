@@ -28,7 +28,10 @@ public class ClassLoader extends SimpleJsonResourceReloadListener {
         Classes.clear();
         
         for(JsonElement jsonElement : map.values()) {
-            ClassData data = GSON.fromJson(jsonElement, ClassData.class);
+            Gson gson = new GsonBuilder()
+                    .registerTypeAdapter(ClassData.class, ClassData.deserializer)
+                    .create();
+            ClassData data = gson.fromJson(jsonElement, ClassData.class);
 
             if(data == null || !ModUtils.checkCondition(data.displayCondition))
                 continue;

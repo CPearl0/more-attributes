@@ -15,7 +15,6 @@ import net.minecraftforge.network.NetworkEvent;
 import net.minecraftforge.registries.ForgeRegistries;
 import org.mantodea.more_attributes.datas.*;
 import org.mantodea.more_attributes.datas.ClassLoader;
-import org.mantodea.more_attributes.ui.SelectClassScreen;
 import org.mantodea.more_attributes.utils.AttributeUtils;
 import org.mantodea.more_attributes.utils.ClassUtils;
 import org.mantodea.more_attributes.utils.ModifierUtils;
@@ -45,8 +44,9 @@ public record SyncDataToClientMessage(JsonArray data) {
     @OnlyIn(Dist.CLIENT)
     private void handle() {
         Minecraft minecraft = Minecraft.getInstance();
-
-        Gson gson = new GsonBuilder().create();
+        Gson gson = new GsonBuilder()
+                .registerTypeAdapter(ClassData.class, ClassData.deserializer)
+                .create();
 
         Player player = minecraft.player;
 
