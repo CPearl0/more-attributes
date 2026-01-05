@@ -52,12 +52,4 @@ public class ClassLoader extends SimpleJsonResourceReloadListener {
                 Classes.add(data);
         }
     }
-
-    public static void convert_item() {
-        for (var data : Classes) {
-            if (!data.startItems.isEmpty())
-                return;
-            data.convert_item();
-        }
-    }
 }

@@ -53,7 +53,6 @@ public class ClassUtils {
     }
 
     public static void setPlayerClass(Player player, ClassData classData) {
-        classData.convert_item();
         player.getCapability(MoreAttributes.PLAYER_CLASS).resolve().ifPresent(cap -> {
             cap.setClass(classData);
             if (!(player instanceof ServerPlayer))

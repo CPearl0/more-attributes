@@ -23,7 +23,6 @@ public class ClassData extends ConditionalContent {
 
     public Map<String, Integer> attributes = new HashMap<>();
 
-    public List<JsonObject> startItemsRecord = new ArrayList<>();
     public List<ItemStack> startItems = new ArrayList<>();
 
     public static JsonDeserializer<ClassData> deserializer = (json, typeOfT, context) -> {
@@ -41,7 +40,10 @@ public class ClassData extends ConditionalContent {
         if (jsonObject.has("startItems")) {
             JsonArray itemsArray = jsonObject.getAsJsonArray("startItems");
             for (JsonElement itemElement : itemsArray) {
-                res.startItemsRecord.add(itemElement.getAsJsonObject());
+                var itemObject = itemElement.getAsJsonObject();
+                if (!ForgeRegistries.ITEMS.containsKey(ResourceLocation.parse(GsonHelper.getAsString(itemObject, "item"))))
+                    continue;
+                res.startItems.add(CraftingHelper.getItemStack(itemElement.getAsJsonObject(), true));
             }
         }
         return res;
@@ -60,24 +62,21 @@ public class ClassData extends ConditionalContent {
             jsonObject.add("attributes", attrObject);
         }
 
-        if (src.startItemsRecord != null && !src.startItemsRecord.isEmpty()) {
+        if (src.startItems != null) {
             JsonArray itemsArray = new JsonArray();
-            for (var item : src.startItemsRecord) {
-                itemsArray.add(item);
+            for (var item : src.startItems) {
+                JsonObject json = new JsonObject();
+                json.addProperty("item", item.getItem().toString());
+                json.addProperty("count", item.getCount());
+
+                if (item.hasTag()) {
+                    json.addProperty("nbt", item.getTag().toString());
+                }
+                itemsArray.add(json);
             }
             jsonObject.add("startItems", itemsArray);
         }
 
         return jsonObject;
     };
-
-    public void convert_item() {
-        if (!startItems.isEmpty())
-            return;
-        for (var item_data : startItemsRecord) {
-            if (!ForgeRegistries.ITEMS.containsKey(new ResourceLocation(GsonHelper.getAsString(item_data, "item"))))
-                continue;
-            startItems.add(CraftingHelper.getItemStack(item_data.getAsJsonObject(), true));
-        }
-    }
 }

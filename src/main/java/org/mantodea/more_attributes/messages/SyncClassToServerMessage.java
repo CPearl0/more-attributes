@@ -1,19 +1,11 @@
 package org.mantodea.more_attributes.messages;
 
-import com.google.gson.JsonObject;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.util.GsonHelper;
-import net.minecraft.world.InteractionHand;
-import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.ItemHandlerHelper;
 import net.minecraftforge.network.NetworkEvent;
-import net.minecraftforge.registries.ForgeRegistries;
 import org.mantodea.more_attributes.datas.ClassData;
-import org.mantodea.more_attributes.datas.ClassLoader;
 import org.mantodea.more_attributes.utils.ClassUtils;
-import org.mantodea.more_attributes.utils.ModifierUtils;
 
 import java.util.function.Supplier;
 
@@ -40,21 +32,8 @@ public record SyncClassToServerMessage(ClassData data) {
 
         var startItemSize = buf.readInt();
         for (int i = 0; i < startItemSize; i++) {
-            JsonObject itemObj = new JsonObject();
-
-            String id = buf.readUtf();
-            itemObj.addProperty("item", id);
-
-            int count = buf.readInt();
-            itemObj.addProperty("count", count);
-
-            boolean hasNbt = buf.readBoolean();
-            if (hasNbt) {
-                String nbtString = buf.readUtf();
-                itemObj.addProperty("nbt", nbtString);
-            }
-
-            classData.startItemsRecord.add(itemObj);
+            var item = buf.readItem();
+            classData.startItems.add(item);
         }
 
         return classData;
@@ -71,18 +50,10 @@ public record SyncClassToServerMessage(ClassData data) {
             buf.writeInt(entry.getValue());
         }
 
-        buf.writeInt(data.startItemsRecord.size());
+        buf.writeInt(data.startItems.size());
 
-        for (var item : data.startItemsRecord) {
-            var id = GsonHelper.getAsString(item, "item");
-            buf.writeUtf(id);
-            int count = GsonHelper.getAsInt(item, "count", 1);
-            buf.writeInt(count);
-            buf.writeBoolean(item.has("nbt"));
-            if (item.has("nbt")) {
-                String nbtString = GsonHelper.getAsString(item, "nbt");
-                buf.writeUtf(nbtString);
-            }
+        for (var item : data.startItems) {
+            buf.writeItem(item);
         }
     }
 
@@ -91,7 +62,6 @@ public record SyncClassToServerMessage(ClassData data) {
 
         ctx.enqueueWork(() -> {
             ServerPlayer player = ctx.getSender();
-            ClassLoader.convert_item();
 
             if (player == null || data == null) return;
             ClassUtils.setPlayerClass(player, data);
@@ -101,7 +71,6 @@ public record SyncClassToServerMessage(ClassData data) {
                     ItemHandlerHelper.giveItemToPlayer(player, entry);
                 }
             }
-            player.swing(InteractionHand.MAIN_HAND);
         });
 
         ctx.setPacketHandled(true);

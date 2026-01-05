@@ -15,7 +15,6 @@ import org.mantodea.more_attributes.utils.ModifierUtils;
 import java.util.function.Supplier;
 
 public record SyncClassToClientMessage(ClassData data) {
-
     public SyncClassToClientMessage(FriendlyByteBuf buf) {
         this(getData(buf));
     }
@@ -35,6 +34,12 @@ public record SyncClassToClientMessage(ClassData data) {
             classData.attributes.put(attr, level);
         }
 
+        var startItemSize = buf.readInt();
+        for (int i = 0; i < startItemSize; i++) {
+            var item = buf.readItem();
+            classData.startItems.add(item);
+        }
+
         return classData;
     }
 
@@ -49,18 +54,10 @@ public record SyncClassToClientMessage(ClassData data) {
             buf.writeInt(entry.getValue());
         }
 
-        buf.writeInt(data.startItemsRecord.size());
+        buf.writeInt(data.startItems.size());
 
-        for (var item : data.startItemsRecord) {
-            var id = GsonHelper.getAsString(item, "item");
-            buf.writeUtf(id);
-            int count = GsonHelper.getAsInt(item, "count", 1);
-            buf.writeInt(count);
-            buf.writeBoolean(item.has("nbt"));
-            if (item.has("nbt")) {
-                String nbtString = GsonHelper.getAsString(item, "nbt");
-                buf.writeUtf(nbtString);
-            }
+        for (var item : data.startItems) {
+            buf.writeItem(item);
         }
     }
 
@@ -74,7 +71,6 @@ public record SyncClassToClientMessage(ClassData data) {
 
     @OnlyIn(Dist.CLIENT)
     private void handle() {
-        ClassLoader.convert_item();
         Player player = Minecraft.getInstance().player;
 
         if (player == null || data == null) return;
