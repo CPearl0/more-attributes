@@ -17,6 +17,10 @@
             "count": 64
         },
         {
+            "item": "tfc:alabaster/polished/gray",
+            "count": 1
+        },
+        {
             "item": "minecraft:netherite_sword",
             "count": 1,
             "nbt": "{Damage:0,Enchantments:[{id:\"minecraft:fire_aspect\",lvl:2}]}"
